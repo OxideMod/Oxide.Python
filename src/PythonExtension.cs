@@ -72,12 +72,11 @@ namespace Oxide.Core.Python
         /// Initializes a new instance of the PythonExtension class
         /// </summary>
         /// <param name="manager"></param>
-        public PythonExtension(ExtensionManager manager)
-            : base(manager)
+        public PythonExtension(ExtensionManager manager) : base(manager)
         {
-            var assem = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => assembly.GetName().Name == "IronPython" || assembly.GetName().Name == "Microsoft.Scripting");
-            var types = assem.SelectMany(Utility.GetAllTypesFromAssembly).Where(t => t.IsSubclassOf(typeof(Exception)));
-            foreach (var type in types)
+            IEnumerable<Assembly> assem = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => assembly.GetName().Name == "IronPython" || assembly.GetName().Name == "Microsoft.Scripting");
+            IEnumerable<Type> types = assem.SelectMany(Utility.GetAllTypesFromAssembly).Where(t => t.IsSubclassOf(typeof(Exception)));
+            foreach (Type type in types)
             {
                 ExceptionHandler.RegisterType(type, ex => PythonEngine.GetService<ExceptionOperations>().FormatException(ex));
             }
@@ -105,7 +104,7 @@ namespace Oxide.Core.Python
             // Create the Python engine
             PythonEngine = IronPython.Hosting.Python.CreateEngine();
 
-            var paths = PythonEngine.GetSearchPaths();
+            ICollection<string> paths = PythonEngine.GetSearchPaths();
             paths.Add(Path.Combine(Interface.Oxide.InstanceDirectory, "Lib"));
             PythonEngine.SetSearchPaths(paths);
 
@@ -147,13 +146,17 @@ namespace Oxide.Core.Python
 
         internal void InitializeTypes()
         {
-            if (_typesInit) return;
+            if (_typesInit)
+            {
+                return;
+            }
+
             _typesInit = true;
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(AllowAssemblyAccess);
+            IEnumerable<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(AllowAssemblyAccess);
             // Bind all namespaces and types
-            var enumerable = assemblies as IList<Assembly> ?? assemblies.ToList();
-            foreach (var assembly in enumerable)
+            IList<Assembly> enumerable = assemblies as IList<Assembly> ?? assemblies.ToList();
+            foreach (Assembly assembly in enumerable)
             {
                 PythonEngine.Runtime.LoadAssembly(assembly);
             }
@@ -168,17 +171,34 @@ namespace Oxide.Core.Python
             {
                 return Builtin.__import__(context, moduleName, globals, locals, fromlist, -1);
             }
+
             throw new ImportException("Import of module " + moduleName + " not allowed");
         }
 
         private bool CheckModule(string moduleName, PythonTuple fromlist)
         {
-            if (WhitelistNamespaces?.Any(moduleName.StartsWith) ?? false) return true;
-            if (moduleName.Equals("System") && !fromlist.Any(@from => @from.Equals("IO"))) return true;
-            if (_allowedTypes.Contains(moduleName)) return true;
-            if (WhitelistModules.Contains(moduleName)) return true;
+            if (WhitelistNamespaces?.Any(moduleName.StartsWith) ?? false)
+            {
+                return true;
+            }
+
+            if (moduleName.Equals("System") && !fromlist.Any(from => from.Equals("IO")))
+            {
+                return true;
+            }
+
+            if (_allowedTypes.Contains(moduleName))
+            {
+                return true;
+            }
+
+            if (WhitelistModules.Contains(moduleName))
+            {
+                return true;
+            }
+
             string[] parts;
-            return WhitelistParts.TryGetValue(moduleName, out parts) && fromlist.All(@from => parts.Contains(@from));
+            return WhitelistParts.TryGetValue(moduleName, out parts) && fromlist.All(from => parts.Contains(from));
         }
 
         /// <summary>
@@ -210,13 +230,11 @@ namespace Oxide.Core.Python
                 PythonEngine.GetBuiltinModule().SetVariable(path, library);
                 return;
             }
+
             foreach (string name in library.GetFunctionNames())
             {
                 MethodInfo method = library.GetFunction(name);
-
-                var typeArgs = method.GetParameters()
-                    .Select(p => p.ParameterType)
-                    .ToList();
+                List<Type> typeArgs = method.GetParameters().Select(p => p.ParameterType).ToList();
 
                 Type delegateType;
                 if (method.ReturnType == typeof(void))
@@ -250,9 +268,12 @@ namespace Oxide.Core.Python
         /// </summary>
         public override void OnModLoad()
         {
-            foreach (var extension in Manager.GetAllExtensions())
+            foreach (Extension extension in Manager.GetAllExtensions())
             {
-                if (!extension.IsGameExtension) continue;
+                if (!extension.IsGameExtension)
+                {
+                    continue;
+                }
 
                 WhitelistAssemblies = extension.WhitelistAssemblies;
                 WhitelistNamespaces = extension.WhitelistNamespaces;
@@ -260,7 +281,7 @@ namespace Oxide.Core.Python
             }
 
             // Bind Python specific libraries
-            var logger = new PythonLogger(Manager.Logger);
+            PythonLogger logger = new PythonLogger(Manager.Logger);
             PythonEngine.Runtime.IO.SetOutput(logger, Encoding.UTF8);
             PythonEngine.Runtime.IO.SetErrorOutput(logger, Encoding.UTF8);
             LoadLibrary(new PythonDatafile(PythonEngine), "data");

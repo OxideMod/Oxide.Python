@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0
 MinimumVisualStudioVersion = 15.0
-Project("{CE424E6A-151B-4DE2-900A-86E704F7AAC6}") = "Oxide.Python", "Oxide.Python\Oxide.Python.csproj", "{B05D4995-6E61-4E82-AC91-5A7B46EC9781}"
+Project("{CE424E6A-151B-4DE2-900A-86E704F7AAC6}") = "Oxide.Python", "src\Oxide.Python.csproj", "{B05D4995-6E61-4E82-AC91-5A7B46EC9781}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

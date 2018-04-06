@@ -27,7 +27,10 @@ namespace Oxide.Core.Python
                 if (keystr != null)
                 {
                     object value = TranslatePythonItemToConfigItem(dict[key]);
-                    if (value != null) config[keystr] = value;
+                    if (value != null)
+                    {
+                        config[keystr] = value;
+                    }
                 }
             }
         }
@@ -43,23 +46,28 @@ namespace Oxide.Core.Python
             {
                 return item;
             }
-            var tuple = item as PythonTuple;
+
+            PythonTuple tuple = item as PythonTuple;
             if (tuple != null)
             {
                 return tuple.Select(TranslatePythonItemToConfigItem).ToList();
             }
-            var dictionary = item as PythonDictionary;
+
+            PythonDictionary dictionary = item as PythonDictionary;
             if (dictionary != null)
             {
                 Dictionary<string, object> dict = new Dictionary<string, object>();
                 foreach (object key in dictionary.Keys)
                 {
-                    var s = key as string;
+                    string s = key as string;
                     if (s != null)
+                    {
                         dict.Add(s, TranslatePythonItemToConfigItem(dictionary[key]));
+                    }
                 }
                 return dict;
             }
+
             return null;
         }
 
@@ -73,7 +81,7 @@ namespace Oxide.Core.Python
         {
             PythonDictionary tbl = new PythonDictionary();
             // Loop each item in config
-            foreach (var pair in config)
+            foreach (KeyValuePair<string, object> pair in config)
             {
                 // Translate and set on table
                 tbl[pair.Key] = TranslateConfigItemToPythonItem(pair.Value);
@@ -92,24 +100,29 @@ namespace Oxide.Core.Python
         {
             // Switch on the object type
             if (item is int || item is float || item is double || item is bool || item is string)
+            {
                 return item;
-            var objects = item as List<object>;
+            }
+
+            List<object> objects = item as List<object>;
             if (objects != null)
             {
                 return new PythonTuple(objects);
             }
-            var dictionary = item as Dictionary<string, object>;
+
+            Dictionary<string, object> dictionary = item as Dictionary<string, object>;
             if (dictionary != null)
             {
                 PythonDictionary tbl = new PythonDictionary();
                 Dictionary<string, object> dict = dictionary;
-                foreach (var pair in dict)
+                foreach (KeyValuePair<string, object> pair in dict)
                 {
                     tbl[pair.Key] = TranslateConfigItemToPythonItem(pair.Value);
                 }
 
                 return tbl;
             }
+
             return null;
         }
 
@@ -130,7 +143,7 @@ namespace Oxide.Core.Python
         /// <returns></returns>
         public static IEnumerable<Type> GetAllTypesFromAssembly(Assembly asm)
         {
-            foreach (var module in asm.GetModules())
+            foreach (Module module in asm.GetModules())
             {
                 Type[] moduleTypes;
                 try
@@ -146,7 +159,7 @@ namespace Oxide.Core.Python
                     moduleTypes = new Type[0];
                 }
 
-                foreach (var type in moduleTypes)
+                foreach (Type type in moduleTypes)
                 {
                     if (type != null)
                     {

@@ -45,9 +45,11 @@ namespace Oxide.Core.Python
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            var message = Encoding.UTF8.GetString(buffer, offset, count);
+            string message = Encoding.UTF8.GetString(buffer, offset, count);
             if (message != Environment.NewLine) // Filter empty
+            {
                 Logger.Write(LogType.Info, message);
+            }
         }
 
         public override bool CanRead => false;
@@ -56,15 +58,12 @@ namespace Oxide.Core.Python
 
         public override bool CanWrite => true;
 
-        public override long Length
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override long Length => throw new NotImplementedException();
 
         public override long Position
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
         }
     }
 }

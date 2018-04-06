@@ -44,11 +44,17 @@ namespace Oxide.Core.Python.Libraries
         {
             // Get the data file
             DynamicConfigFile datafile = Interface.Oxide.DataFileSystem.GetDatafile(name);
-            if (datafile == null) return null;
+            if (datafile == null)
+            {
+                return null;
+            }
 
             // Check if it already exists
             PythonDictionary dict;
-            if (datafilemap.TryGetValue(datafile, out dict)) return dict;
+            if (datafilemap.TryGetValue(datafile, out dict))
+            {
+                return dict;
+            }
 
             // Create the table
             dict = Utility.DictionaryFromConfig(datafile, PythonEngine);
@@ -67,11 +73,17 @@ namespace Oxide.Core.Python.Libraries
         {
             // Get the data file
             DynamicConfigFile datafile = Interface.Oxide.DataFileSystem.GetDatafile(name);
-            if (datafile == null) return;
+            if (datafile == null)
+            {
+                return;
+            }
 
             // Get the table
             PythonDictionary dict;
-            if (!datafilemap.TryGetValue(datafile, out dict)) return;
+            if (!datafilemap.TryGetValue(datafile, out dict))
+            {
+                return;
+            }
 
             // Copy and save
             Utility.SetConfigFromDictionary(datafile, dict);

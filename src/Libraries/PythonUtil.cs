@@ -32,6 +32,7 @@ namespace Oxide.Core.Python.Libraries
             {
                 return false;
             }
+
             array[index] = converted;
             return true;
         }
